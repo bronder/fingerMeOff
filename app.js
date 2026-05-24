@@ -490,6 +490,10 @@ class GuitarScaleApp {
         // String names (high e at top to low E at bottom)
         const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
         
+        // Find max fret for line width
+        const maxFret = positions.length > 0 ? Math.max(...positions.map(p => p.fret)) : 12;
+        const lineWidth = Math.max(maxFret + 5, 40);
+        
         // Create a map of string -> sorted array of fret numbers
         const stringFrets = {};
         positions.forEach(p => {
@@ -509,17 +513,26 @@ class GuitarScaleApp {
             const frets = stringFrets[string] || [];
             
             if (frets.length > 0) {
-                // Format: e|--12--15--17--|
-                let line = stringNames[5 - string] + '|';
+                // Build a character array for the line
+                let line = new Array(lineWidth).fill('-');
+                line[0] = stringNames[5 - string];
+                line[1] = '|';
+                
                 frets.forEach((fret, i) => {
-                    const dashCount = i === 0 ? fret : frets[i] - frets[i - 1] - 1;
-                    line += '-'.repeat(dashCount);
-                    line += fret.toString();
+                    const pos = 2 + fret;
+                    if (pos < lineWidth) {
+                        line[pos] = fret.toString();
+                        // Add dash between consecutive frets if needed
+                        if (i > 0 && fret === frets[i-1] + 1) {
+                            // consecutive frets - single dash between
+                            line[pos - 1] = '-';
+                        }
+                    }
                 });
-                line += '-|';
-                lines.push(line);
+                
+                lines.push(line.join(''));
             } else {
-                lines.push(stringNames[5 - string] + '||');
+                lines.push(stringNames[5 - string] + '|' + '-'.repeat(lineWidth - 2));
             }
         }
         
