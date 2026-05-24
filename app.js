@@ -487,41 +487,48 @@ class GuitarScaleApp {
 
     // Generate guitar tab from positions
     generateGuitarTab(positions) {
+        // Find max fret to determine width (cap at 24)
+        const maxFret = Math.min(Math.max(...positions.map(p => p.fret), 0), 24);
+        const width = Math.max(maxFret + 2, 15); // Minimum 15 chars
+        
+        // String names (high e at top to low E at bottom)
         const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
-        const maxFret = Math.max(...positions.map(p => p.fret), 12);
-        const lines = [];
         
-        // Tab header
-        lines.push('e|----------------------------------------------------------------');
-        lines.push('B|----------------------------------------------------------------');
-        lines.push('G|----------------------------------------------------------------');
-        lines.push('D|----------------------------------------------------------------');
-        lines.push('A|----------------------------------------------------------------');
-        lines.push('E|----------------------------------------------------------------');
-        
-        // Create a map of string -> fret -> note
+        // Create a map of string -> fret -> fret number
         const noteMap = {};
         positions.forEach(p => {
             if (!noteMap[p.string]) noteMap[p.string] = {};
-            noteMap[p.string][p.fret] = p.note;
+            noteMap[p.string][p.fret] = p.fret; // Store the fret number
         });
         
-        // Build tab strings (high e at top to low E at bottom)
-        const tabStrings = ['e|', 'B|', 'G|', 'D|', 'A|', 'E|'];
+        // Build tab lines
+        const lines = [];
         
-        // Add notes to tab strings
-        for (let fret = 0; fret <= maxFret; fret++) {
-            for (let string = 0; string < 6; string++) {
-                if (noteMap[string] && noteMap[string][fret] !== undefined) {
-                    const note = noteMap[string][fret];
-                    // Center the number at the fret position
-                    const padding = Math.max(0, fret - tabStrings[string].length + 1);
-                    tabStrings[string] += ' '.repeat(padding) + note;
+        for (let string = 5; string >= 0; string--) {
+            let line = stringNames[5 - string] + '|';
+            
+            // Add fret markers and numbers
+            for (let pos = 0; pos <= maxFret; pos++) {
+                if (noteMap[string] && noteMap[string][pos] !== undefined) {
+                    const fretNum = noteMap[string][pos];
+                    // Convert single digit to string, double digit stays as is
+                    line += fretNum;
+                    if (fretNum < 10) line += ' ';
+                } else {
+                    line += '-';
                 }
             }
+            lines.push(line);
         }
         
-        return tabStrings.join('\n');
+        // Add fret numbers at the bottom
+        let fretLine = '  |';
+        for (let i = 0; i <= maxFret; i++) {
+            fretLine += i % 10; // Single digit
+        }
+        lines.push(fretLine);
+        
+        return lines.join('\n');
     }
 
     // Update the scale information panel
