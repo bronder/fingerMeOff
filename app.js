@@ -490,50 +490,49 @@ class GuitarScaleApp {
         // String names (high e at top to low E at bottom)
         const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
         
-        // Find max fret for line width
-        const maxFret = positions.length > 0 ? Math.max(...positions.map(p => p.fret)) : 12;
-        const lineWidth = Math.max(maxFret + 5, 40);
+        // Find all unique fret positions
+        const allFrets = [...new Set(positions.map(p => p.fret))].sort((a, b) => a - b);
+        if (allFrets.length === 0) return '';
         
-        // Create a map of string -> sorted array of fret numbers
-        const stringFrets = {};
+        // Create a map of string -> fret -> note
+        const noteMap = {};
         positions.forEach(p => {
-            if (!stringFrets[p.string]) stringFrets[p.string] = [];
-            stringFrets[p.string].push(p.fret);
+            if (!noteMap[p.string]) noteMap[p.string] = {};
+            noteMap[p.string][p.fret] = p.fret;
         });
         
-        // Sort each string's frets
-        Object.keys(stringFrets).forEach(string => {
-            stringFrets[string].sort((a, b) => a - b);
-        });
-        
-        // Build tab lines
+        // Build the tab by grouping notes by fret position
         const lines = [];
         
+        // Add fret position header
+        let header = '   ';
+        const fretGroups = [];
+        
+        for (let i = 0; i < allFrets.length; i++) {
+            const fret = allFrets[i];
+            const nextFret = allFrets[i + 1];
+            const dashCount = nextFret ? (nextFret - fret) : 10;
+            fretGroups.push({ fret, dashCount });
+            header += fret.toString() + ' '.repeat(dashCount - fret.toString().length);
+        }
+        lines.push(header);
+        
+        // Add each string line
         for (let string = 5; string >= 0; string--) {
-            const frets = stringFrets[string] || [];
+            let line = stringNames[5 - string] + '|';
+            const stringNotes = noteMap[string] || {};
             
-            if (frets.length > 0) {
-                // Build a character array for the line
-                let line = new Array(lineWidth).fill('-');
-                line[0] = stringNames[5 - string];
-                line[1] = '|';
+            for (let i = 0; i < fretGroups.length; i++) {
+                const { fret, dashCount } = fretGroups[i];
                 
-                frets.forEach((fret, i) => {
-                    const pos = 2 + fret;
-                    if (pos < lineWidth) {
-                        line[pos] = fret.toString();
-                        // Add dash between consecutive frets if needed
-                        if (i > 0 && fret === frets[i-1] + 1) {
-                            // consecutive frets - single dash between
-                            line[pos - 1] = '-';
-                        }
-                    }
-                });
-                
-                lines.push(line.join(''));
-            } else {
-                lines.push(stringNames[5 - string] + '|' + '-'.repeat(lineWidth - 2));
+                if (stringNotes[fret] !== undefined) {
+                    line += fret.toString();
+                } else {
+                    line += '-';
+                }
+                line += '-'.repeat(dashCount - 1);
             }
+            lines.push(line);
         }
         
         return lines.join('\n');
