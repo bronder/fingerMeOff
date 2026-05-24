@@ -487,12 +487,16 @@ class GuitarScaleApp {
 
     // Generate guitar tab from positions
     generateGuitarTab(positions) {
+        if (!positions || positions.length === 0) {
+            return 'e|-\nB|-\nG|-\nD|-\nA|-\nE|-';
+        }
+        
         // String names (high e at top to low E at bottom)
         const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
         
-        // Find all unique fret positions
-        const allFrets = [...new Set(positions.map(p => p.fret))].sort((a, b) => a - b);
-        if (allFrets.length === 0) return '';
+        // Find max fret for line width
+        const maxFret = Math.max(...positions.map(p => p.fret));
+        const minFret = Math.min(...positions.map(p => p.fret));
         
         // Create a map of string -> fret -> note
         const noteMap = {};
@@ -501,19 +505,13 @@ class GuitarScaleApp {
             noteMap[p.string][p.fret] = p.fret;
         });
         
-        // Build the tab by grouping notes by fret position
+        // Build tab lines
         const lines = [];
         
         // Add fret position header
         let header = '   ';
-        const fretGroups = [];
-        
-        for (let i = 0; i < allFrets.length; i++) {
-            const fret = allFrets[i];
-            const nextFret = allFrets[i + 1];
-            const dashCount = nextFret ? (nextFret - fret) : 10;
-            fretGroups.push({ fret, dashCount });
-            header += fret.toString() + ' '.repeat(dashCount - fret.toString().length);
+        for (let f = minFret; f <= maxFret; f++) {
+            header += f + ' ';
         }
         lines.push(header);
         
@@ -522,15 +520,12 @@ class GuitarScaleApp {
             let line = stringNames[5 - string] + '|';
             const stringNotes = noteMap[string] || {};
             
-            for (let i = 0; i < fretGroups.length; i++) {
-                const { fret, dashCount } = fretGroups[i];
-                
-                if (stringNotes[fret] !== undefined) {
-                    line += fret.toString();
+            for (let f = minFret; f <= maxFret; f++) {
+                if (stringNotes[f] !== undefined) {
+                    line += f + ' ';
                 } else {
-                    line += '-';
+                    line += '- ';
                 }
-                line += '-'.repeat(dashCount - 1);
             }
             lines.push(line);
         }
