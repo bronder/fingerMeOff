@@ -487,46 +487,41 @@ class GuitarScaleApp {
 
     // Generate guitar tab from positions
     generateGuitarTab(positions) {
-        // Find max fret to determine width (cap at 24)
-        const maxFret = Math.min(Math.max(...positions.map(p => p.fret), 0), 24);
-        const width = Math.max(maxFret + 2, 15); // Minimum 15 chars
-        
         // String names (high e at top to low E at bottom)
         const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
         
-        // Create a map of string -> fret -> fret number
-        const noteMap = {};
+        // Create a map of string -> sorted array of fret numbers
+        const stringFrets = {};
         positions.forEach(p => {
-            if (!noteMap[p.string]) noteMap[p.string] = {};
-            noteMap[p.string][p.fret] = p.fret; // Store the fret number
+            if (!stringFrets[p.string]) stringFrets[p.string] = [];
+            stringFrets[p.string].push(p.fret);
+        });
+        
+        // Sort each string's frets
+        Object.keys(stringFrets).forEach(string => {
+            stringFrets[string].sort((a, b) => a - b);
         });
         
         // Build tab lines
         const lines = [];
         
         for (let string = 5; string >= 0; string--) {
-            let line = stringNames[5 - string] + '|';
+            const frets = stringFrets[string] || [];
             
-            // Add fret markers and numbers
-            for (let pos = 0; pos <= maxFret; pos++) {
-                if (noteMap[string] && noteMap[string][pos] !== undefined) {
-                    const fretNum = noteMap[string][pos];
-                    // Convert single digit to string, double digit stays as is
-                    line += fretNum;
-                    if (fretNum < 10) line += ' ';
-                } else {
-                    line += '-';
-                }
+            if (frets.length > 0) {
+                // Format: e|--12--15--17--|
+                let line = stringNames[5 - string] + '|';
+                frets.forEach((fret, i) => {
+                    const dashCount = i === 0 ? fret : frets[i] - frets[i - 1] - 1;
+                    line += '-'.repeat(dashCount);
+                    line += fret.toString();
+                });
+                line += '-|';
+                lines.push(line);
+            } else {
+                lines.push(stringNames[5 - string] + '||');
             }
-            lines.push(line);
         }
-        
-        // Add fret numbers at the bottom
-        let fretLine = '  |';
-        for (let i = 0; i <= maxFret; i++) {
-            fretLine += i % 10; // Single digit
-        }
-        lines.push(fretLine);
         
         return lines.join('\n');
     }
