@@ -485,16 +485,63 @@ class GuitarScaleApp {
         return dot;
     }
 
+    // Generate guitar tab from positions
+    generateGuitarTab(positions) {
+        const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
+        const maxFret = Math.max(...positions.map(p => p.fret), 12);
+        const lines = [];
+        
+        // Tab header
+        lines.push('e|----------------------------------------------------------------');
+        lines.push('B|----------------------------------------------------------------');
+        lines.push('G|----------------------------------------------------------------');
+        lines.push('D|----------------------------------------------------------------');
+        lines.push('A|----------------------------------------------------------------');
+        lines.push('E|----------------------------------------------------------------');
+        
+        // Create a map of string -> fret -> note
+        const noteMap = {};
+        positions.forEach(p => {
+            if (!noteMap[p.string]) noteMap[p.string] = {};
+            noteMap[p.string][p.fret] = p.note;
+        });
+        
+        // Build tab strings (high e at top to low E at bottom)
+        const tabStrings = ['e|', 'B|', 'G|', 'D|', 'A|', 'E|'];
+        
+        // Add notes to tab strings
+        for (let fret = 0; fret <= maxFret; fret++) {
+            for (let string = 0; string < 6; string++) {
+                if (noteMap[string] && noteMap[string][fret] !== undefined) {
+                    const note = noteMap[string][fret];
+                    // Center the number at the fret position
+                    const padding = Math.max(0, fret - tabStrings[string].length + 1);
+                    tabStrings[string] += ' '.repeat(padding) + note;
+                }
+            }
+        }
+        
+        return tabStrings.join('\n');
+    }
+
     // Update the scale information panel
     updateScaleInfo() {
         const scale = SCALES[this.currentScale];
         const scaleNotes = this.getScaleNotes(this.currentKey, this.currentScale);
+        const pattern = this.getPatternDefinition();
+        const positions = this.getPatternPositions(scaleNotes, pattern, this.currentKey);
 
         // Update scale name
         document.getElementById('scaleName').textContent = `${this.currentKey} ${scale.name}`;
         
         // Update formula
         document.getElementById('scaleFormula').textContent = scale.formula;
+
+        // Update guitar tab
+        const tabDisplay = document.getElementById('guitarTab');
+        if (tabDisplay) {
+            tabDisplay.textContent = this.generateGuitarTab(positions);
+        }
 
         // Update notes display
         const notesContainer = document.getElementById('scaleNotesDisplay');
