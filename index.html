@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScaleMaster - Guitar Scale Learning App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎸 ScaleMaster</h1>
+            <p>Learn guitar scales with interactive visualizations</p>
+        </header>
+
+        <!-- Controls Section -->
+        <section class="controls">
+            <div class="control-group">
+                <label for="keySelect">Key</label>
+                <select id="keySelect">
+                    <!-- Populated by JavaScript -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="scaleSelect">Scale</label>
+                <select id="scaleSelect">
+                    <!-- Populated by JavaScript -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="patternSelect">Pattern/Position</label>
+                <select id="patternSelect">
+                    <option value="all">Show All Notes</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="octaveSelect">Octave Range</label>
+                <select id="octaveSelect">
+                    <option value="all">All Frets</option>
+                    <option value="0-12">0 - 12</option>
+                    <option value="12-24">12 - 24</option>
+                </select>
+            </div>
+
+            <div class="audio-controls">
+                <button id="playBtn" class="play-btn">
+                    ▶ Play Scale
+                </button>
+                <div class="tempo-group">
+                    <button class="tempo-btn" data-tempo="slow">Slow</button>
+                    <button class="tempo-btn active" data-tempo="medium">Medium</button>
+                    <button class="tempo-btn" data-tempo="fast">Fast</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guitar Neck -->
+        <section class="guitar-neck-container">
+            <div id="guitarNeck" class="guitar-neck">
+                <!-- Rendered by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Scale Information Panel -->
+        <section class="scale-info">
+            <h2 id="scaleName">C Major (Ionian)</h2>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Formula</h3>
+                    <div id="scaleFormula" class="value">1 - 2 - 3 - 4 - 5 - 6 - 7</div>
+                </div>
+
+                <div class="info-card">
+                    <h3>Scale Notes</h3>
+                    <div id="scaleNotesDisplay" class="notes-display">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3>Intervals</h3>
+                    <ul id="intervalsList" style="list-style: none; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+                        <!-- Populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interval Legend -->
+            <div class="interval-legend" id="intervalLegend">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Click any note dot on the neck to hear it • Use the play button to hear the full scale</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scales.js"></script>
+    <script src="audio.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
